@@ -5,8 +5,13 @@
  */
 package com.br.lp3.controller;
 
+import com.br.lp3.command.Comando1;
+import com.br.lp3.command.Comando2;
+import com.br.lp3.command.Command;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,16 +38,21 @@ public class FrontController extends HttpServlet {
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet FrontController</title>");            
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet FrontController at " + request.getContextPath() + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
+
+            Command com = null;
+
+            String comando = request.getParameter("command");
+
+            try {
+                Class actionClass = Class.forName("com.br.lp3.command." + comando);
+                com = (Command) actionClass.newInstance();
+                com.init(request);
+                com.execute();
+                request.getRequestDispatcher(com.getReturnPage()).forward(request, response);
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(FrontController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
         }
     }
 
